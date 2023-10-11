@@ -1,0 +1,6 @@
+node_modules/
+dist/
+baileys_auth_info/
+baileys_store_multi.json
+*.env
+env.ts

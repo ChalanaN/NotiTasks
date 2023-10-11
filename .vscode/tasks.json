@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "TypeScript - Watch",
+            "icon": {
+                "color": "terminal.ansiBlue"
+            },
+            "type": "shell",
+            "command": "tsc -p tsconfig.json --watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "isBackground": true,
+            "group": "build"
+		}
+	],
+	"options": {
+		"shell": {
+            "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
+    		"args": [
+    			"--login",
+                "-c"
+    		]
+        }
+	}
+}

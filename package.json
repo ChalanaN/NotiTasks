@@ -1,0 +1,18 @@
+{
+  "name": "notion-manager",
+  "version": "1.0.0",
+  "description": "Easier way to add tasks to notion with natural language",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ChalanaN",
+  "license": "CC-BY-NC-4.0",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@notionhq/client": "^2.2.13",
+    "@whiskeysockets/baileys": "^6.5.0",
+    "dotenv": "^16.3.1",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
