@@ -2,7 +2,7 @@ import makeWASocket, {
     DisconnectReason,
     fetchLatestBaileysVersion,
     makeInMemoryStore,
-    useMultiFileAuthState,
+    useMultiFileAuthState
 } from "@whiskeysockets/baileys"
 import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
 import { Boom } from "@hapi/boom"
@@ -30,14 +30,16 @@ async function connectToWhatsApp() {
     )
     const { version, isLatest } = await fetchLatestBaileysVersion()
     console.log(
-        `Using WhatsApp v${version.join(".")} ${isLatest ? "[LTS]" : ""}`
+        `Using \x1b[92mWhatsApp\x1b[0m v${version.join(".")}\x1b[0m ${
+            isLatest ? "\x1b[102m LTS \x1b[0m" : ""
+        }`
     )
 
     const sock = makeWASocket({
         version,
         logger,
         auth: state,
-        printQRInTerminal: true,
+        printQRInTerminal: true
     })
 
     store?.bind(sock.ev)
@@ -49,17 +51,16 @@ async function connectToWhatsApp() {
                 (lastDisconnect?.error as Boom)?.output?.statusCode !==
                 DisconnectReason.loggedOut
             console.log(
-                "connection closed due to ",
+                "❌ \x1b[31mWhatsApp Connection Closed\x1b[0m due to ",
                 lastDisconnect?.error,
-                ", reconnecting ",
-                shouldReconnect
+                shouldReconnect ? "\n🔁 Reconnecting" : ""
             )
             // reconnect if not logged out
             if (shouldReconnect) {
                 connectToWhatsApp()
             }
         } else if (connection === "open") {
-            console.log("opened connection")
+            console.log("✅ \x1b[32mOpened WhatsApp Connection\x1b[0m")
         }
     })
 
@@ -68,16 +69,14 @@ async function connectToWhatsApp() {
     sock.ev.on("messages.upsert", (m) => {
         for (const msg of m.messages) {
             if (
-                msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)[0] ==
+                msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] ==
                     sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] &&
                 TASK_MSG_REGEX.test(msg.message.conversation)
             ) {
                 // Add task
-                console.log(m)
             }
         }
     })
-    console.log(sock.user)
 
     return sock
 }
