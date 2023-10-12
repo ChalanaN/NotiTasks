@@ -1,10 +1,11 @@
 import { configDotenv } from "dotenv"
 import { addTask } from "./notion"
 import { connectToWhatsApp } from "./whatsapp"
+import parseMessage from "./parser"
 
 configDotenv()
 
-export type TaskStatus = "Not started" | "In progress" | "Done" | "Archived"
+export type TaskStatus = "Not Started" | "In Progress" | "Done" | "Archived"
 
 export interface NotionTask {
     title: string
@@ -20,3 +21,9 @@ export interface NotionTask {
 export const defaultWorkspace = "Personal"
 
 connectToWhatsApp()
+
+process.stdin.resume()
+
+process.stdin.on("data", async function (input) {
+    addTask(parseMessage(input.toString()))
+})
