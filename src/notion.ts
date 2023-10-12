@@ -1,11 +1,47 @@
 import { Client } from "@notionhq/client"
 import { NotionTask, defaultWorkspace } from "."
 import DATABASE_IDS from "./env"
-import { QueryDatabaseResponse } from "@notionhq/client/build/src/api-endpoints"
+import {
+    PageObjectResponse,
+    QueryDatabaseResponse
+} from "@notionhq/client/build/src/api-endpoints"
+import { configDotenv } from "dotenv"
+
+configDotenv()
 
 const notion = new Client({
-    auth: process.env.NOTION_KEY,
+    auth: process.env.NOTION_KEY
 })
+
+export const printTask = async (task: PageObjectResponse) => {
+    let projectName = (await notion.pages.properties.retrieve({
+        // @ts-ignore
+        page_id: task.properties.Project.relation[0].id,
+        property_id: "Project name"
+        // @ts-ignore
+    })).results[0].title.text.content
+
+    console.log(
+        `${
+            // @ts-ignore
+            (task.properties.Status.status.name as TaskStatus) == "In Progress"
+                ? "\x1b[33m"
+                : // @ts-ignore
+                (task.properties.Status.status.name as TaskStatus) == "Done"
+                ? "\x1b[32m"
+                : "\x1b[90m"
+            // @ts-ignore
+        } ●\x1b[0m ${task.properties["Task name"].title[0].text.content} | ${
+            // @ts-ignore
+            task.properties.Due.date.start
+        } ${
+            // @ts-ignore
+            task.properties.Due.date.end != null ? "→ " + task.properties.Due.date.end : ""
+        } ${
+            projectName != "No Project" ? projectName : ""
+        }`
+    )
+}
 
 async function addTask(task: NotionTask) {
     let projectPage: QueryDatabaseResponse
@@ -17,9 +53,9 @@ async function addTask(task: NotionTask) {
             filter: {
                 property: "Project name",
                 title: {
-                    contains: task.project,
-                },
-            },
+                    contains: task.project
+                }
+            }
         })
 
         if (projectPage.results.length == 0)
@@ -31,9 +67,9 @@ async function addTask(task: NotionTask) {
                 filter: {
                     property: "Name",
                     title: {
-                        contains: task.workspace || defaultWorkspace,
-                    },
-                },
+                        contains: task.workspace || defaultWorkspace
+                    }
+                }
             })
         ).results?.[0]
 
@@ -46,24 +82,24 @@ async function addTask(task: NotionTask) {
                     {
                         property: "Project name",
                         title: {
-                            equals: "No Project",
-                        },
+                            equals: "No Project"
+                        }
                     },
                     {
                         property: "Workspace",
                         relation: {
-                            contains: workspace.id,
-                        },
-                    },
-                ],
-            },
+                            contains: workspace.id
+                        }
+                    }
+                ]
+            }
         })
     }
 
     // Create the task
     const response = await notion.pages.create({
         parent: {
-            database_id: DATABASE_IDS.TASKS,
+            database_id: DATABASE_IDS.TASKS
         },
         properties: {
             title: {
@@ -72,29 +108,29 @@ async function addTask(task: NotionTask) {
                     {
                         type: "text",
                         text: {
-                            content: task.title,
-                        },
-                    },
-                ],
+                            content: task.title
+                        }
+                    }
+                ]
             },
             Due: {
                 type: "date",
                 date: {
-                    start: task.date.start,
-                },
+                    start: task.date.start
+                }
             },
             Project: {
                 type: "relation",
                 relation: [
                     {
-                        id: projectPage.results[0].id,
-                    },
-                ],
-            },
-        },
+                        id: projectPage.results[0].id
+                    }
+                ]
+            }
+        }
     })
 
-    console.log(response)
+    printTask(response)
 }
 
 export { addTask }
