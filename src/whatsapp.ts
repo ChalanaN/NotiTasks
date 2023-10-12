@@ -6,6 +6,8 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys"
 import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
 import { Boom } from "@hapi/boom"
+import { addTask } from "./notion"
+import parseMessage from "./parser"
 
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/
@@ -73,7 +75,7 @@ async function connectToWhatsApp() {
                     sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] &&
                 TASK_MSG_REGEX.test(msg.message.conversation)
             ) {
-                // Add task
+                addTask(parseMessage(msg.message.conversation.replace(TASK_MSG_REGEX, "")))
             }
         }
     })
