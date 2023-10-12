@@ -1,5 +1,6 @@
 import { configDotenv } from "dotenv"
 import { addTask } from "./notion"
+import { connectToWhatsApp } from "./whatsapp"
 
 configDotenv()
 
@@ -17,3 +18,5 @@ export interface NotionTask {
 }
 
 export const defaultWorkspace = "Personal"
+
+connectToWhatsApp()
