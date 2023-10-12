@@ -1,12 +1,19 @@
+import { configDotenv } from "dotenv"
+import { addTask } from "./notion"
+
+configDotenv()
+
 export type TaskStatus = "Not started" | "In progress" | "Done" | "Archived"
 
 export interface NotionTask {
     title: string
     project?: string
-    associatedWith?: string
+    workspace?: string
     date?: {
-        start: string,
+        start: string
         end?: string
     }
     status?: TaskStatus
 }
+
+export const defaultWorkspace = "Personal"
