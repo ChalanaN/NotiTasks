@@ -33,10 +33,10 @@ export const printTask = async (task: PageObjectResponse) => {
             // @ts-ignore
         } ●\x1b[0m ${task.properties["Task name"].title[0].text.content} | ${
             // @ts-ignore
-            task.properties.Due.date.start
+            task.properties.Due?.date?.start || ""
         } ${
             // @ts-ignore
-            task.properties.Due.date.end != null ? "→ " + task.properties.Due.date.end : ""
+            task.properties.Due?.date?.end != null ? "→ " + task.properties.Due.date.end : ""
         } ${
             projectName != "No Project" ? projectName : ""
         }`
@@ -113,12 +113,13 @@ async function addTask(task: NotionTask) {
                     }
                 ]
             },
-            Due: {
+            Due: task.date.start ? ({
                 type: "date",
                 date: {
-                    start: task.date.start
+                    start: task.date.start,
+                    end: task.date.end
                 }
-            },
+            }) : undefined,
             Project: {
                 type: "relation",
                 relation: [
