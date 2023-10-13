@@ -132,6 +132,8 @@ async function addTask(task: NotionTask) {
     })
 
     printTask(response)
+
+    return { ...task, id: response.id }
 }
 
 export { addTask }
