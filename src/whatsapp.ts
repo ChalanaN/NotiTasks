@@ -1,3 +1,4 @@
+import fs from "fs/promises"
 import makeWASocket, {
     DisconnectReason,
     fetchLatestBaileysVersion,
@@ -11,6 +12,14 @@ import parseMessage from "./parser"
 
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/
+
+/**
+ * `WhatsApp message id` > `Notion task id` map of the tasks created on WhatsApp
+ */
+export const taskMap: { [id: string]: string } = {}
+const taskMapFile = "./taskmap.json"
+
+loadTaskMap()
 
 const logger = MAIN_LOGGER.child({})
 logger.level = "error"
@@ -68,19 +77,47 @@ async function connectToWhatsApp() {
 
     sock.ev.on("creds.update", saveCreds)
 
-    sock.ev.on("messages.upsert", (m) => {
+    sock.ev.on("messages.upsert", async (m) => {
         for (const msg of m.messages) {
             if (
                 msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] ==
                     sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] &&
                 TASK_MSG_REGEX.test(msg.message.conversation)
             ) {
-                addTask(parseMessage(msg.message.conversation.replace(TASK_MSG_REGEX, "")))
+                let task = await addTask(parseMessage(msg.message.conversation.replace(TASK_MSG_REGEX, "")))
+
+                taskMap[msg.key.id] = task.id
+
+                saveTaskMap()
             }
         }
     })
 
     return sock
+}
+
+async function loadTaskMap() {
+    try {
+        await fs.access(taskMapFile)
+
+        let savedMap: typeof taskMap = JSON.parse(
+            (await fs.readFile(taskMapFile)).toString()
+        )
+
+        for (const id in savedMap) {
+            if (Object.prototype.hasOwnProperty.call(savedMap, id)) {
+                taskMap[id] = savedMap[id]
+            }
+        }
+    } catch {}
+
+    return taskMap
+}
+
+function saveTaskMap() {
+    return fs.writeFile(taskMapFile, JSON.stringify(taskMap), {
+        flag: "w"
+    })
 }
 
 export { connectToWhatsApp }
