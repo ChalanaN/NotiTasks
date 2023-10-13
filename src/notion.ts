@@ -13,36 +13,6 @@ const notion = new Client({
     auth: process.env.NOTION_KEY
 })
 
-export const printTask = async (task: PageObjectResponse) => {
-    let projectName = (await notion.pages.properties.retrieve({
-        // @ts-ignore
-        page_id: task.properties.Project.relation[0].id,
-        property_id: "Project name"
-        // @ts-ignore
-    })).results[0].title.text.content
-
-    console.log(
-        `${
-            // @ts-ignore
-            (task.properties.Status.status.name as TaskStatus) == "In Progress"
-                ? "\x1b[33m"
-                : // @ts-ignore
-                (task.properties.Status.status.name as TaskStatus) == "Done"
-                ? "\x1b[32m"
-                : "\x1b[90m"
-            // @ts-ignore
-        } ●\x1b[0m ${task.properties["Task name"].title[0].text.content} | ${
-            // @ts-ignore
-            task.properties.Due?.date?.start || ""
-        } ${
-            // @ts-ignore
-            task.properties.Due?.date?.end != null ? "→ " + task.properties.Due.date.end : ""
-        } ${
-            projectName != "No Project" ? projectName : ""
-        }`
-    )
-}
-
 async function addTask(task: NotionTask) {
     let projectPage: QueryDatabaseResponse
 
@@ -136,4 +106,34 @@ async function addTask(task: NotionTask) {
     return { ...task, id: response.id }
 }
 
-export { addTask }
+async function printTask(task: PageObjectResponse) {
+    let projectName = (await notion.pages.properties.retrieve({
+        // @ts-ignore
+        page_id: task.properties.Project.relation[0].id,
+        property_id: "Project name"
+        // @ts-ignore
+    })).results[0].title.text.content
+
+    console.log(
+        `${
+            // @ts-ignore
+            (task.properties.Status.status.name as TaskStatus) == "In Progress"
+                ? "\x1b[33m"
+                : // @ts-ignore
+                (task.properties.Status.status.name as TaskStatus) == "Done"
+                ? "\x1b[32m"
+                : "\x1b[90m"
+            // @ts-ignore
+        } ●\x1b[0m ${task.properties["Task name"].title[0].text.content} | ${
+            // @ts-ignore
+            task.properties.Due?.date?.start || ""
+        } ${
+            // @ts-ignore
+            task.properties.Due?.date?.end != null ? "→ " + task.properties.Due.date.end : ""
+        } ${
+            projectName != "No Project" ? projectName : ""
+        }`
+    )
+}
+
+export { addTask, printTask }
