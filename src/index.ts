@@ -16,6 +16,7 @@ export interface NotionTask {
         end?: string
     }
     status?: TaskStatus
+    id?: string
 }
 
 export const defaultWorkspace = "Personal"
