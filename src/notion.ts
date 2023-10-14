@@ -13,6 +13,11 @@ const notion = new Client({
     auth: process.env.NOTION_KEY
 })
 
+const workspaceMap: { [id: string]: PageObjectResponse } = {},
+    projectMap: { [id: string]: PageObjectResponse } = {}
+
+loadMaps()
+
 async function addTask(task: NotionTask) {
     let projectPage: QueryDatabaseResponse
 
@@ -134,6 +139,22 @@ async function printTask(task: PageObjectResponse) {
             projectName != "No Project" ? projectName : ""
         }`
     )
+}
+
+async function loadMaps() {
+    (await notion.databases.query({
+        database_id: DATABASE_IDS.WORKSPACES
+    })).results.forEach(page => {
+        // @ts-ignore
+        workspaceMap[page.id] = page.properties
+    });
+
+    (await notion.databases.query({
+        database_id: DATABASE_IDS.PROJECTS
+    })).results.forEach(page => {
+        // @ts-ignore
+        projectMap[page.id] = page.properties
+    })
 }
 
 export { addTask, printTask }
