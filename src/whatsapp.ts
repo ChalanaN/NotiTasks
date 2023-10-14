@@ -89,6 +89,17 @@ async function connectToWhatsApp() {
 
                     saveTaskMap()
                 }
+                // New task with a parent task
+                else if (TASK_MSG_REGEX.test(msg.message.extendedTextMessage?.text) && taskMap[msg.message.extendedTextMessage?.contextInfo.stanzaId]) {
+                    let task = await addTask({
+                        parentTask: taskMap[msg.message.extendedTextMessage.contextInfo.stanzaId],
+                        ...parseMessage(msg.message.extendedTextMessage.text.replace(TASK_MSG_REGEX, ""))
+                    })
+
+                    taskMap[msg.key.id] = task.id
+
+                    saveTaskMap()
+                }
                 // Updated task
                 else if (msg.message.editedMessage && taskMap[msg.message.editedMessage.message.protocolMessage.key.id]) {
                     updateTask({

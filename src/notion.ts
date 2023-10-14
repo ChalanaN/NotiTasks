@@ -71,7 +71,15 @@ async function addTask(task: NotionTask) {
                         id: projectPage.results[0].id
                     }
                 ]
-            }
+            },
+            "Parent task": task.parentTask ? {
+                type: "relation",
+                relation: [
+                    {
+                        id: task.parentTask
+                    }
+                ]
+            } : undefined
         }
     })
 
@@ -108,6 +116,15 @@ async function updateTask(task: { id: string } & Partial<NotionTask>) {
             start: task.date.start,
             end: task.date.end
         }
+    })
+
+    task.parentTask && (properties["Parent task"] = {
+        type: "relation",
+        relation: [
+            {
+                id: task.parentTask
+            }
+        ]
     })
 
     if (task.project) {
