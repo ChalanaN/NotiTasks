@@ -9,7 +9,7 @@ import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
 import { Boom } from "@hapi/boom"
 import { addTask, archiveTask, updateTask } from "./notion"
 import parseMessage from "./parser"
-import { TaskStatus } from "."
+import { TaskStatus } from "./notion"
 
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/

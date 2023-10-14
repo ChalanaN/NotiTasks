@@ -14,6 +14,7 @@ const notion = new Client({
     auth: process.env.NOTION_KEY
 })
 
+const defaultWorkspace = "Personal"
 const workspaceMap: { [id: string]: PageObjectResponse } = {},
     projectMap: { [id: string]: PageObjectResponse } = {}
 
@@ -250,3 +251,18 @@ async function loadMaps() {
 }
 
 export { addTask, updateTask, archiveTask, printTask }
+
+export type TaskStatus = "Not Started" | "In Progress" | "Done" | "Archived"
+
+export interface NotionTask {
+    title: string
+    project?: string
+    workspace?: string
+    date?: {
+        start: string
+        end?: string
+    }
+    status?: TaskStatus
+    id?: string
+    parentTask?: string
+}
