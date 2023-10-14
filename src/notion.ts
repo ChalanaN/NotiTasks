@@ -6,6 +6,7 @@ import {
     UpdatePageParameters
 } from "@notionhq/client/build/src/api-endpoints.js"
 import { configDotenv } from "dotenv"
+import stringWidth from "string-width"
 
 configDotenv()
 
@@ -83,7 +84,7 @@ async function addTask(task: NotionTask) {
         }
     })
 
-    printTask(response as PageObjectResponse)
+    printTask(response as PageObjectResponse, "[\x1b[32m NEW \x1b[0m]")
 
     return { ...task, id: response.id }
 }
@@ -157,7 +158,7 @@ async function updateTask(task: { id: string } & Partial<NotionTask>) {
     printTask(await notion.pages.update({
         page_id: task.id,
         properties
-    }) as PageObjectResponse)
+    }) as PageObjectResponse, "[\x1b[33m UPDATED \x1b[0m]")
 }
 
 function archiveTask(taskId: string) {
@@ -203,34 +204,34 @@ async function resolveProjectFromWorkspace(workspace: string) {
     })
 }
 
-async function printTask(task: PageObjectResponse) {
+async function printTask(task: PageObjectResponse, specialNotes: string = "") {
     let projectName = (await notion.pages.properties.retrieve({
         // @ts-ignore
         page_id: task.properties.Project.relation[0].id,
         property_id: "Project name"
         // @ts-ignore
-    })).results[0].title.text.content
+    })).results[0].title.text.content,
+    projectNameString = `| ${
+        projectName == "No Project"
+        // @ts-ignore
+        ? "#" + workspaceMap[projectMap[task.properties.Project.relation[0].id]?.Workspace?.relation[0].id]?.Name.title[0].text.content
+        : projectName
+    }`,
+    // @ts-ignore
+    taskNameString = (((task.properties.Status.status.name as TaskStatus) == "Done" || (task.properties.Status.status.name as TaskStatus) == "Archived") ? "\x1b[9m" : "") + task.properties["Task name"].title[0].text.content + "\x1b[0m" + " " + specialNotes + " ",
+    // @ts-ignore
+    statusIndicator = `${ (task.properties.Status.status.name as TaskStatus) == "In Progress" ? "\x1b[33m"
+                    // @ts-ignore
+                    : (task.properties.Status.status.name as TaskStatus) == "Done" ? "\x1b[32m"
+                    : "\x1b[90m" } ●\x1b[0m`,
+    // @ts-ignore
+    dateString = `${ task.properties.Due?.date?.start != null ? " " + task.properties.Due?.date?.start : "" }${ task.properties.Due?.date?.end != null ? " → " + task.properties.Due.date.end : "" }`
 
-    console.log(
-        `${
-            // @ts-ignore
-            (task.properties.Status.status.name as TaskStatus) == "In Progress"
-                ? "\x1b[33m"
-                : // @ts-ignore
-                (task.properties.Status.status.name as TaskStatus) == "Done"
-                ? "\x1b[32m"
-                : "\x1b[90m"
-            // @ts-ignore
-        } ●\x1b[0m ${task.properties["Task name"].title[0].text.content} | ${
-            // @ts-ignore
-            task.properties.Due?.date?.start || ""
-        } ${
-            // @ts-ignore
-            task.properties.Due?.date?.end != null ? "→ " + task.properties.Due.date.end : ""
-        } ${
-            projectName != "No Project" ? projectName : ""
-        }`
-    )
+    const leftString = `${ statusIndicator } ${ taskNameString }`,
+        rightString = `${ dateString } ${ projectNameString }`,
+        emptyColumns = process.stdout.columns - (stringWidth(leftString) + stringWidth(rightString))
+
+    console.log(leftString + "\x1b[90m" + ".".repeat(emptyColumns) + "\x1b[0m" + rightString)
 }
 
 async function loadMaps() {
@@ -247,6 +248,8 @@ async function loadMaps() {
         // @ts-ignore
         projectMap[page.id] = page.properties
     })
+
+    console.log("✅ Maps Loaded")
 }
 
 export { addTask, updateTask, archiveTask, printTask }

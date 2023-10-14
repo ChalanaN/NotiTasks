@@ -72,7 +72,7 @@ async function connectToWhatsApp() {
                 connectToWhatsApp()
             }
         } else if (connection === "open") {
-            console.log("✅ \x1b[32mOpened WhatsApp Connection\x1b[0m")
+            console.log("✅ Opened WhatsApp Connection")
         }
     })
 
