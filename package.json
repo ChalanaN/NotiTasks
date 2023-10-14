@@ -2,7 +2,12 @@
   "name": "notitasks",
   "version": "1.0.0",
   "description": "Easier way manage tasks in notion with natural language",
-  "keywords": [ "whatsapp", "task-manager", "notion", "notion-api" ],
+  "keywords": [
+    "whatsapp",
+    "task-manager",
+    "notion",
+    "notion-api"
+  ],
   "repository": {
     "url": "https://github.com/ChalanaN/NotiTasks"
   },
@@ -18,6 +23,7 @@
     "@whiskeysockets/baileys": "^6.5.0",
     "dotenv": "^16.3.1",
     "extract-date": "^2.8.2",
+    "extract-time": "^3.5.0",
     "qrcode-terminal": "^0.12.0"
   }
 }

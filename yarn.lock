@@ -355,6 +355,15 @@ extract-date@^2.8.2:
     relative-date-names "^1.0.4"
     roarr "^2.15.2"
 
+extract-time@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/extract-time/-/extract-time-3.5.0.tgz#989f42ecf825162566cd1b05905848e5812cf4b7"
+  integrity sha512-mzEcVl3Mfp0IZbs+9IW069x6XXpDwesjTnjrqH7A6cLD1YiWPSxAzUvOhUT2nKPkQaU/lbBi88yYREseUSuEHw==
+  dependencies:
+    cartesian "^1.0.1"
+    date-fns "^2.9.0"
+    roarr "^2.15.2"
+
 fast-redact@^3.0.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/fast-redact/-/fast-redact-3.3.0.tgz#7c83ce3a7be4898241a46560d51de10f653f7634"
