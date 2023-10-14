@@ -78,7 +78,7 @@ async function connectToWhatsApp() {
 
     sock.ev.on("creds.update", saveCreds)
 
-    sock.ev.on("messages.upsert", async (m) => {
+    sock.ev.on("messages.upsert", (m) => {
         for (const msg of m.messages) {
             if (msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] == sock.user.id.match(NUMBER_FROM_JID_REGEX)[0]) {
                 // New task
