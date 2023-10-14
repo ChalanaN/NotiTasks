@@ -7,8 +7,9 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys"
 import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
 import { Boom } from "@hapi/boom"
-import { addTask } from "./notion"
+import { addTask, updateTask } from "./notion"
 import parseMessage from "./parser"
+import { TaskStatus } from "."
 
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/
@@ -79,16 +80,49 @@ async function connectToWhatsApp() {
 
     sock.ev.on("messages.upsert", async (m) => {
         for (const msg of m.messages) {
-            if (
-                msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] ==
-                    sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] &&
-                TASK_MSG_REGEX.test(msg.message.conversation)
-            ) {
-                let task = await addTask(parseMessage(msg.message.conversation.replace(TASK_MSG_REGEX, "")))
+            if (msg?.key?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] == sock.user.id.match(NUMBER_FROM_JID_REGEX)[0]) {
+                // New task
+                if (TASK_MSG_REGEX.test(msg.message.conversation)) {
+                    let task = await addTask(parseMessage(msg.message.conversation.replace(TASK_MSG_REGEX, "")))
 
-                taskMap[msg.key.id] = task.id
+                    taskMap[msg.key.id] = task.id
 
-                saveTaskMap()
+                    saveTaskMap()
+                }
+                // Updated task
+                else if (taskMap[msg.key.id] && msg.message.editedMessage) {
+                    updateTask({
+                        id: taskMap[msg.key.id],
+                        ...parseMessage(msg.message.editedMessage.message.conversation.replace(TASK_MSG_REGEX, ""))
+                    })
+                }
+                // Task status update
+                else if (taskMap[msg.key.id] && msg.message.reactionMessage) {
+                    // This event doesn't get called when the reaction is removed as of baileys v6.5.60
+                    // The solution is to change `if (reaction.text)` to `if (reaction.text || reaction.text == "")`
+                    // on ./node_modules/@whiskeysockets/baileys/lib/Utils/messages.js:615
+                    let status: TaskStatus
+
+                    switch (msg.message.reactionMessage.text) {
+                        case "👍":
+                            status = "In Progress"
+                            break
+                        case "❤️":
+                            status = "Done"
+                            break
+                        case "🙏":
+                            status = "Archived"
+                            break
+                        case "":
+                            status = "Not Started"
+                            break
+                    }
+
+                    status && await updateTask({
+                        id: taskMap[msg.key.id],
+                        status: status
+                    })
+                }
             }
         }
     })

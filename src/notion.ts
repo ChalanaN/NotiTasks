@@ -3,7 +3,8 @@ import { NotionTask, defaultWorkspace } from "."
 import DATABASE_IDS from "./env"
 import {
     PageObjectResponse,
-    QueryDatabaseResponse
+    QueryDatabaseResponse,
+    UpdatePageParameters
 } from "@notionhq/client/build/src/api-endpoints"
 import { configDotenv } from "dotenv"
 
@@ -36,39 +37,7 @@ async function addTask(task: NotionTask) {
         if (projectPage.results.length == 0)
             throw new Error("Project not found")
     } else {
-        let workspace = (
-            await notion.databases.query({
-                database_id: DATABASE_IDS.WORKSPACES,
-                filter: {
-                    property: "Name",
-                    title: {
-                        contains: task.workspace || defaultWorkspace
-                    }
-                }
-            })
-        ).results?.[0]
-
-        if (!workspace) throw new Error("Workspace not found")
-
-        projectPage = await notion.databases.query({
-            database_id: DATABASE_IDS.PROJECTS,
-            filter: {
-                and: [
-                    {
-                        property: "Project name",
-                        title: {
-                            equals: "No Project"
-                        }
-                    },
-                    {
-                        property: "Workspace",
-                        relation: {
-                            contains: workspace.id
-                        }
-                    }
-                ]
-            }
-        })
+        projectPage = await resolveProjectFromWorkspace(task.workspace)
     }
 
     // Create the task
@@ -109,6 +78,105 @@ async function addTask(task: NotionTask) {
     printTask(response)
 
     return { ...task, id: response.id }
+}
+
+async function updateTask(task: { id: string } & Partial<NotionTask>) {
+    let properties: UpdatePageParameters["properties"] = {}
+
+    task.title && (properties["title"] = {
+        type: "title",
+        title: [
+            {
+                type: "text",
+                text: {
+                    content: task.title
+                }
+            }
+        ]
+    })
+
+    task.status && (properties["Status"] = {
+        type: "status",
+        status: {
+            name: task.status
+        }
+    })
+
+    task.date && (properties["Due"] = {
+        type: "date",
+        date: {
+            start: task.date.start,
+            end: task.date.end
+        }
+    })
+
+    if (task.project) {
+        let projectId = Object.keys(projectMap).reduce((found, id) => {
+            // @ts-ignore
+            return projectMap[id].properties["Project name"].title[0].text.includes(task.project) ? id : found
+        }, false) as string | false
+
+        projectId && (properties["Project"] = {
+            type: "relation",
+            relation: [
+                {
+                    id: projectId
+                }
+            ]
+        })
+    } else if (task.workspace) {
+        let projectId = (await resolveProjectFromWorkspace(task.workspace)).results[0].id
+
+        projectId && (properties["Project"] = {
+            type: "relation",
+            relation: [
+                {
+                    id: projectId
+                }
+            ]
+        })
+    }
+
+    printTask(await notion.pages.update({
+        page_id: task.id,
+        properties
+    }) as PageObjectResponse)
+}
+
+async function resolveProjectFromWorkspace(workspace: string) {
+    let workspacePage = (
+        await notion.databases.query({
+            database_id: DATABASE_IDS.WORKSPACES,
+            filter: {
+                property: "Name",
+                title: {
+                    contains: workspace || defaultWorkspace
+                }
+            }
+        })
+    ).results?.[0]
+
+    if (!workspacePage) throw new Error("Workspace not found")
+
+    return await notion.databases.query({
+        database_id: DATABASE_IDS.PROJECTS,
+        filter: {
+            and: [
+                {
+                    property: "Project name",
+                    title: {
+                        equals: "No Project"
+                    }
+                },
+                {
+                    property: "Workspace",
+                    relation: {
+                        contains: workspacePage.id
+                    }
+                }
+            ]
+        }
+    })
 }
 
 async function printTask(task: PageObjectResponse) {
@@ -157,4 +225,4 @@ async function loadMaps() {
     })
 }
 
-export { addTask, printTask }
+export { addTask, updateTask, printTask }
