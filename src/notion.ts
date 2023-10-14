@@ -1,11 +1,10 @@
 import { Client } from "@notionhq/client"
-import { NotionTask, defaultWorkspace } from "."
-import DATABASE_IDS from "./env"
+import DATABASE_IDS from "./env.js"
 import {
     PageObjectResponse,
     QueryDatabaseResponse,
     UpdatePageParameters
-} from "@notionhq/client/build/src/api-endpoints"
+} from "@notionhq/client/build/src/api-endpoints.js"
 import { configDotenv } from "dotenv"
 
 configDotenv()

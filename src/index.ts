@@ -1,7 +1,7 @@
 import { configDotenv } from "dotenv"
-import { addTask } from "./notion"
-import { connectToWhatsApp } from "./whatsapp"
-import parseMessage from "./parser"
+import { addTask } from "./notion.js"
+import { connectToWhatsApp } from "./whatsapp.js"
+import parseMessage from "./parser.js"
 
 configDotenv()
 

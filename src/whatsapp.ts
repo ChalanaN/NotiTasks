@@ -1,15 +1,15 @@
 import fs from "fs/promises"
-import makeWASocket, {
+import { makeWASocket,
     DisconnectReason,
     fetchLatestBaileysVersion,
     makeInMemoryStore,
     useMultiFileAuthState
 } from "@whiskeysockets/baileys"
-import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
+import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger.js"
 import { Boom } from "@hapi/boom"
-import { addTask, archiveTask, updateTask } from "./notion"
-import parseMessage from "./parser"
-import { TaskStatus } from "./notion"
+import { addTask, archiveTask, updateTask } from "./notion.js"
+import parseMessage from "./parser.js"
+import { TaskStatus } from "./notion.js"
 
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/
@@ -22,7 +22,7 @@ const taskMapFile = "./taskmap.json"
 
 loadTaskMap()
 
-const logger = MAIN_LOGGER.child({})
+const logger = MAIN_LOGGER.default.child({})
 logger.level = "error"
 
 const useStore = !process.argv.includes("--no-store")

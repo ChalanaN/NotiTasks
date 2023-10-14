@@ -1,6 +1,6 @@
 import extractDate from "extract-date"
 import extractTime from "extract-time"
-import { NotionTask } from "./notion"
+import { NotionTask } from "./notion.js"
 
 const REGEXPS = {
     workspace: /#(\w+)/,
