@@ -75,7 +75,7 @@ async function addTask(task: NotionTask) {
         }
     })
 
-    printTask(response)
+    printTask(response as PageObjectResponse)
 
     return { ...task, id: response.id }
 }

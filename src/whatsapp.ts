@@ -128,7 +128,9 @@ async function connectToWhatsApp() {
     })
 
     sock.ev.on("messages.delete", async m => {
+        // @ts-ignore
         if (m.keys) {
+            // @ts-ignore
             for (const msgKey of m.keys) {
                 // Delete task
                 if (msgKey?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] == sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] && taskMap[msgKey.id]) {
