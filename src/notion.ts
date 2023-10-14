@@ -143,6 +143,13 @@ async function updateTask(task: { id: string } & Partial<NotionTask>) {
     }) as PageObjectResponse)
 }
 
+function archiveTask(taskId: string) {
+    return notion.pages.update({
+        page_id: taskId,
+        archived: true
+    })
+}
+
 async function resolveProjectFromWorkspace(workspace: string) {
     let workspacePage = (
         await notion.databases.query({
@@ -225,4 +232,4 @@ async function loadMaps() {
     })
 }
 
-export { addTask, updateTask, printTask }
+export { addTask, updateTask, archiveTask, printTask }

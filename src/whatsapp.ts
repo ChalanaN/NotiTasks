@@ -7,7 +7,7 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys"
 import MAIN_LOGGER from "@whiskeysockets/baileys/lib/Utils/logger"
 import { Boom } from "@hapi/boom"
-import { addTask, updateTask } from "./notion"
+import { addTask, archiveTask, updateTask } from "./notion"
 import parseMessage from "./parser"
 import { TaskStatus } from "."
 
@@ -122,6 +122,19 @@ async function connectToWhatsApp() {
                         id: taskMap[msg.message.reactionMessage.key.id],
                         status: status
                     })
+                }
+            }
+        }
+    })
+
+    sock.ev.on("messages.delete", async m => {
+        if (m.keys) {
+            for (const msgKey of m.keys) {
+                // Delete task
+                if (msgKey?.remoteJid?.match(NUMBER_FROM_JID_REGEX)?.[0] == sock.user.id.match(NUMBER_FROM_JID_REGEX)[0] && taskMap[msgKey.id]) {
+                    archiveTask(taskMap[msgKey.id])
+                    delete taskMap[msgKey.id]
+                    saveTaskMap()
                 }
             }
         }
