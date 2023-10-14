@@ -90,14 +90,14 @@ async function connectToWhatsApp() {
                     saveTaskMap()
                 }
                 // Updated task
-                else if (taskMap[msg.key.id] && msg.message.editedMessage) {
+                else if (msg.message.editedMessage && taskMap[msg.message.editedMessage.message.protocolMessage.key.id]) {
                     updateTask({
-                        id: taskMap[msg.key.id],
-                        ...parseMessage(msg.message.editedMessage.message.conversation.replace(TASK_MSG_REGEX, ""))
+                        id: taskMap[msg.message.editedMessage.message.protocolMessage.key.id],
+                        ...parseMessage(msg.message.editedMessage.message.protocolMessage.editedMessage.conversation.replace(TASK_MSG_REGEX, ""))
                     })
                 }
                 // Task status update
-                else if (taskMap[msg.key.id] && msg.message.reactionMessage) {
+                else if (msg.message.reactionMessage && taskMap[msg.message.reactionMessage.key.id]) {
                     // This event doesn't get called when the reaction is removed as of baileys v6.5.60
                     // The solution is to change `if (reaction.text)` to `if (reaction.text || reaction.text == "")`
                     // on ./node_modules/@whiskeysockets/baileys/lib/Utils/messages.js:615
@@ -119,7 +119,7 @@ async function connectToWhatsApp() {
                     }
 
                     status && await updateTask({
-                        id: taskMap[msg.key.id],
+                        id: taskMap[msg.message.reactionMessage.key.id],
                         status: status
                     })
                 }

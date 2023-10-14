@@ -102,7 +102,7 @@ async function updateTask(task: { id: string } & Partial<NotionTask>) {
         }
     })
 
-    task.date && (properties["Due"] = {
+    task.date?.start && (properties["Due"] = {
         type: "date",
         date: {
             start: task.date.start,
