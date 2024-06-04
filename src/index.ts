@@ -1,11 +1,11 @@
 import { configDotenv } from "dotenv"
 import { addTask } from "./notion.js"
-import { connectToWhatsApp } from "./whatsapp.js"
+import { startWebhook } from "./whatsapp.js"
 import parseMessage from "./parser.js"
 
 configDotenv()
 
-connectToWhatsApp()
+startWebhook()
 
 process.stdin.resume()
 
