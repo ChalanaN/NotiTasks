@@ -14,12 +14,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "serve": "npm run build && firebase emulators:start --only functions",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "build": "tsc -p tsconfig.json"
   },
   "author": "ChalanaN",
   "license": "MIT",
@@ -31,12 +26,6 @@
     "extract-date": "^2.8.2",
     "extract-time": "^3.5.0",
     "qrcode-terminal": "^0.12.0",
-    "string-width": "^6.1.0",
-    "firebase-admin": "^11.8.0",
-    "firebase-functions": "^4.3.1"
-  },
-  "devDependencies": {
-    "typescript": "^4.9.0",
-    "firebase-functions-test": "^3.1.0"
+    "string-width": "^6.1.0"
   }
 }

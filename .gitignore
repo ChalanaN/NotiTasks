@@ -5,4 +5,3 @@ baileys_store_multi.json
 *.env
 env.ts
 taskmap.json
-*-debug.log
