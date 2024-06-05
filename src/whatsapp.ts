@@ -72,8 +72,6 @@ const server = https.createServer({
 }, (req, res) => {
     const requestURL = new URL(req.url!, `http://${req.headers.host}`)
 
-    console.log(requestURL.href)
-
     if (requestURL.pathname == WEBHOOK_PATHNAME) {
         switch (req.method) {
             case "GET":
