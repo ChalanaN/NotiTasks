@@ -1,11 +1,12 @@
 import fs from "fs/promises"
-import http from "http"
+import { readFileSync } from "fs"
+import https from "https"
 import { addTask, archiveTask, updateTask } from "./notion.js"
 import parseMessage from "./parser.js"
 import { TaskStatus } from "./notion.js"
 import { WebHookRequest } from "./webhook.js"
 
-const { WEBHOOK_VERIFY_TOKEN, PORT, WEBHOOK_PATHNAME } = process.env;
+const { WEBHOOK_VERIFY_TOKEN, PORT, WEBHOOK_PATHNAME, CERT_PATH } = process.env;
 const TASK_MSG_REGEX = /^\. /,
     NUMBER_FROM_JID_REGEX = /^\d{11}/
 
@@ -52,10 +53,16 @@ export async function handleMessage(data: WebHookRequest) {
     }
 }
 
-// HTTP Server ⚡
+// HTTPS Server ⚡
 
-const server = http.createServer((req, res) => {
+const server = https.createServer({
+    key: readFileSync(CERT_PATH + "privkey.pem"),
+    cert: readFileSync(CERT_PATH + "fullchain.pem"),
+    ca: readFileSync(CERT_PATH + "chain.pem")
+}, (req, res) => {
     const requestURL = new URL(req.url!, `http://${req.headers.host}`)
+
+    console.log(requestURL.href)
 
     if (requestURL.pathname == WEBHOOK_PATHNAME) {
         switch (req.method) {
