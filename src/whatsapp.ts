@@ -16,8 +16,14 @@ const taskMapFile = "./taskmap.json"
 
 loadTaskMap()
 
+// For some reason WhatsApp keeps sending the same requests again and again. This is a workaround to fix that.
+const recentMsgIds: string[] = [],
+    recentMsgStoreCount = 10
+
 export async function handleMessage(data: WebHookRequest) {
     for (const msg of data.entry[0].changes[0].value.messages) {
+        if (recentMsgIds.includes(msg.id)) continue
+
         if (msg?.type == "text") {
             if (msg.context?.id && taskMap[msg.context?.id]) {
                 // New task with a parent task
@@ -60,6 +66,9 @@ export async function handleMessage(data: WebHookRequest) {
                 status: status
             })
         }
+
+        recentMsgIds.push(msg.id)
+        if (recentMsgIds.length > recentMsgStoreCount) recentMsgIds.shift()
     }
 }
 
@@ -74,6 +83,18 @@ const server = https.createServer({
 
     if (requestURL.pathname == WEBHOOK_PATHNAME) {
         switch (req.method) {
+            case "POST":
+                let incomingData = ""
+
+                req.on("data", chunk => { incomingData += chunk });
+
+                req.on("end", () => {
+                    try {
+                        handleMessage(JSON.parse(incomingData) as WebHookRequest)
+                    } catch {}
+                })
+                break
+
             case "GET":
                 const mode = requestURL.searchParams.get("hub.mode")
                 const token = requestURL.searchParams.get("hub.verify_token")
@@ -90,19 +111,7 @@ const server = https.createServer({
                     res.statusCode = 403
                     res.end()
                 }
-                break
-
-            case "POST":
-                let incomingData = ""
-
-                req.on("data", chunk => { incomingData += chunk });
-
-                req.on("end", () => {
-                    try {
-                        handleMessage(JSON.parse(incomingData) as WebHookRequest)
-                    } catch {}
-                })
-                break
+                break            
         }
     } else {
         res.end("NotiTasks ⚡")
