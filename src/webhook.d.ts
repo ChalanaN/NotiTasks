@@ -2,6 +2,10 @@ export type WebhookMessage = {
     from: string,
     id: string,
     timestamp: string,
+    context?: {
+        from: string,
+        id: string
+    }
 } & ({
     type: 'text',
     text: {
