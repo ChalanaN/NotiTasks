@@ -7,8 +7,6 @@ import { TaskStatus } from "./notion.js"
 import { WebHookRequest } from "./webhook.js"
 
 const { WEBHOOK_VERIFY_TOKEN, PORT, WEBHOOK_PATHNAME, CERT_PATH } = process.env;
-const TASK_MSG_REGEX = /^\. /,
-    NUMBER_FROM_JID_REGEX = /^\d{11}/
 
 /**
  * `WhatsApp message id` > `Notion task id` map of the tasks created on WhatsApp
@@ -21,13 +19,25 @@ loadTaskMap()
 export async function handleMessage(data: WebHookRequest) {
     for (const msg of data.entry[0].changes[0].value.messages) {
         if (msg?.type == "text") {
-            // New task
-            let task = await addTask(parseMessage(msg.text.body))
+            if (msg.context?.id && taskMap[msg.context?.id]) {
+                // New task with a parent task
+                let task = await addTask({
+                    parentTask: taskMap[msg.context?.id],
+                    ...parseMessage(msg.text.body)
+                })
 
-            taskMap[msg.id] = task.id
+                taskMap[msg.id] = task.id
 
-            saveTaskMap()
-        } else {
+                saveTaskMap()
+            } else {
+                // New task
+                let task = await addTask(parseMessage(msg.text.body))
+
+                taskMap[msg.id] = task.id
+
+                saveTaskMap()
+            }
+        } else if (msg.type == "reaction") {
             let status: TaskStatus
 
             switch (msg.reaction.emoji) {
@@ -86,12 +96,13 @@ const server = https.createServer({
 
             case "POST":
                 let incomingData = ""
-                let data
+
                 req.on("data", chunk => { incomingData += chunk });
 
                 req.on("end", () => {
-                    // log incoming messages
-                    console.log("Incoming webhook message:", incomingData);
+                    try {
+                        handleMessage(JSON.parse(incomingData) as WebHookRequest)
+                    } catch {}
                 })
                 break
         }
