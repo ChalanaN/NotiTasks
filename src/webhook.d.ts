@@ -14,7 +14,7 @@ export type WebhookMessage = {
 } | {
     type: 'reaction',
     reaction: {
-        emoji: string,
+        emoji?: string,
         "message_id": string
     }
 })

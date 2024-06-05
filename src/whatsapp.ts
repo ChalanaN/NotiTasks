@@ -50,7 +50,7 @@ export async function handleMessage(data: WebHookRequest) {
                 case "🙏":
                     status = "Archived"
                     break
-                case "":
+                default:
                     status = "Not Started"
                     break
             }
