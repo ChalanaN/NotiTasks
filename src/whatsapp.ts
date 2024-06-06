@@ -91,6 +91,8 @@ const server = https.createServer({
                 req.on("end", () => {
                     try {
                         handleMessage(JSON.parse(incomingData) as WebHookRequest)
+                        res.statusCode = 200
+                        res.end()
                     } catch {}
                 })
                 break
